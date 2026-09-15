@@ -17,7 +17,7 @@ const SHAPE_BUTTONS: { type: ShapeType; label: string; icon: typeof Square }[] =
 export function ElementPanel() {
     const { engine, exitDrawMode } = useCanvasEngineContext();
     return (
-        <div className="flex flex-col gap-1 rounded-2xl border border-panel-border bg-panel p-2 shadow-sm">
+        <div className="flex flex-col gap-1 p-2">
             {SHAPE_BUTTONS.map(({ type, label, icon }) => (
                 <IconButton
                     key={type}

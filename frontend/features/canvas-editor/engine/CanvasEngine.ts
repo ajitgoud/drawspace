@@ -27,6 +27,7 @@ export interface CanvasEditingApi {
     getActiveObjectIds(): string[];
     getObjectAttributes(id: string): ObjectAttributes | null;
     updateObjectAttributes(id: string, attrs: Partial<ObjectAttributes>): void;
+    setInteractive(enabled: boolean): void;
 }
 
 export interface CanvasPersistenceApi {

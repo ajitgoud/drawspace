@@ -35,7 +35,7 @@ const RegisterPage = () => {
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mb-3 w-full rounded-md border border-panel-border px-3 py-2 text-sm"
+                    className="mb-3 w-full rounded-md border border-panel-border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400"
                     required
                 />
                 <input
@@ -43,7 +43,7 @@ const RegisterPage = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="mb-4 w-full rounded-md border border-panel-border px-3 py-2 text-sm"
+                    className="mb-4 w-full rounded-md border border-panel-border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400"
                     required
                     minLength={8}
                 />

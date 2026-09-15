@@ -7,7 +7,7 @@ import { IconButton } from "@/shared/ui/IconButton";
 export function Toolbar() {
     const { engine, isSelected, canUndo, canRedo, undo, redo } = useCanvasEngineContext();
     return (
-        <div className="flex flex-col gap-1 rounded-2xl border border-panel-border bg-panel p-2 shadow-sm">
+        <div className="flex flex-col gap-1 p-2">
             <IconButton icon={Undo2} label="Undo" disabled={!canUndo} onClick={undo} />
             <IconButton icon={Redo2} label="Redo" disabled={!canRedo} onClick={redo} />
             <div className="my-1 h-px bg-panel-border" />

@@ -55,6 +55,16 @@ export class FabricCanvasEngine implements CanvasEngine {
         this.canvas = null;
     }
 
+    setInteractive(enabled: boolean): void {
+        this.requireCanvas().selection = enabled;
+        this.requireCanvas().getObjects().forEach((obj: any) => {
+            obj.selectable = enabled;
+            obj.evented = enabled;
+        });
+        this.requireCanvas().hoverCursor = enabled ? "move" : "default";
+        this.requireCanvas().requestRenderAll();
+    }
+
     private requireCanvas(): Canvas {
         if (!this.canvas) {
             throw new Error("CanvasEngine used before initialize() was called");

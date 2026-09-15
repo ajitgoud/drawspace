@@ -11,6 +11,9 @@ import { CanvasSurface } from "@/features/canvas-editor/components/CanvasSurface
 import AttributesPanel from "@/features/canvas-editor/components/AttributesPanel";
 import ExportControls from "@/features/canvas-editor/components/ExportControls";
 import SaveButton from "@/features/canvas-editor/components/SaveButton";
+import { useRouter } from "next/navigation";
+import { getToken } from "@/lib/api";
+import ShareButton from "@/features/canvas-editor/components/ShareButton";
 
 const CanvasLoader = ({
                           canvasId,
@@ -42,7 +45,19 @@ const CanvasLoader = ({
 
 const EditorPage = () => {
     const { id } = useParams<{ id: string }>();
+    const router = useRouter();
     const [title, setTitle] = useState("Untitled canvas");
+    const [authChecked, setAuthChecked] = useState(false);
+
+    useEffect(() => {
+        if (!getToken()) {
+            router.replace("/login");
+            return;
+        }
+        setAuthChecked(true);
+    }, [router]);
+
+    if (!authChecked) return null;
 
     return (
         <TooltipProvider>
@@ -55,13 +70,16 @@ const EditorPage = () => {
                             onChange={(e) => setTitle(e.target.value)}
                             className="rounded-md px-2 py-1 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:bg-zinc-50 focus:outline-none"
                         />
+                        <ShareButton canvasId={id} />
                         <SaveButton canvasId={id} title={title} />
                     </div>
-                    <div className="flex flex-1">
-                        <div className="flex flex-col border-r border-panel-border bg-panel">
-                            <ElementPanel />
-                            <FreehandPanel />
-                            <Toolbar />
+                    <div className="flex flex-1 min-h-0">
+                        <div className="flex h-full flex-col items-stretch gap-3  border-panel-border bg-canvas-bg p-3">
+                            <div className="flex flex-col divide-y divide-panel-border overflow-hidden rounded-2xl border border-panel-border bg-panel shadow-sm">
+                                <ElementPanel />
+                                <FreehandPanel />
+                                <Toolbar />
+                            </div>
                         </div>
                         <CanvasSurface />
                         <div className="flex w-64 flex-col border-l border-panel-border bg-panel">

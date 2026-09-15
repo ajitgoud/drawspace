@@ -16,7 +16,7 @@ export function FreehandPanel() {
     const { activeDrawTool, selectDrawTool, exitDrawMode } = useCanvasEngineContext();
 
     return (
-        <div className="flex flex-col gap-1 rounded-2xl border border-panel-border bg-panel p-2 shadow-sm">
+        <div className="flex flex-col gap-1 p-2">
             <IconButton icon={MousePointer2} label="Select" active={activeDrawTool === null} onClick={exitDrawMode} />
             <div className="my-1 h-px bg-panel-border" />
             {BRUSH_BUTTONS.map(({ type, label, icon }) => (

@@ -72,4 +72,14 @@ export const api = {
     },
 
     getAsset: (id: string) => request<any>(`/assets/${id}`),
+
+    shareCanvas: (id: string) =>
+        request<{ publicSlug: string }>(`/canvas/${id}/share`, { method: "POST" }),
+
+    // Public endpoint — deliberately does NOT go through the shared `request()`
+    // helper's auth header logic in spirit, but request() is harmless here:
+    // it still attaches a Bearer token if one exists, which is fine since
+    // PublicProjectController doesn't require auth at all — an anonymous
+    // visitor with no token in localStorage works identically.
+    getPublicCanvas: (slug: string) => request<any>(`/public/${slug}`),
 };
