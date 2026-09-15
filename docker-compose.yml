@@ -1,0 +1,134 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: drawspace
+      POSTGRES_PASSWORD: drawspace
+      POSTGRES_DB: drawspace
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U drawspace"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: apache/kafka:3.7.1
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  minio:
+    image: quay.io/minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: drawspace
+      MINIO_ROOT_PASSWORD: drawspace123
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: [ "CMD", "mc", "ready", "local" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/drawspace
+      SPRING_DATASOURCE_USERNAME: drawspace
+      SPRING_DATASOURCE_PASSWORD: drawspace
+      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  canvas-service:
+    build:
+      context: .
+      dockerfile: canvas-service/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/drawspace
+      SPRING_DATASOURCE_USERNAME: drawspace
+      SPRING_DATASOURCE_PASSWORD: drawspace
+      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  asset-service:
+    build:
+      context: .
+      dockerfile: asset-service/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/drawspace
+      SPRING_DATASOURCE_USERNAME: drawspace
+      SPRING_DATASOURCE_PASSWORD: drawspace
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: drawspace
+      S3_SECRET_KEY: drawspace123
+      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_REDIS_HOST: redis
+      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+    depends_on:
+      redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      canvas-service:
+        condition: service_started
+      asset-service:
+        condition: service_started
+
+volumes:
+  pg_data:
+  minio_data:

@@ -1,0 +1,37 @@
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/drawspace}
+    username: ${SPRING_DATASOURCE_USERNAME:drawspace}
+    password: ${SPRING_DATASOURCE_PASSWORD:drawspace}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: asset-service
+      auto-offset-reset: earliest
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+jwt:
+  secret: ${JWT_SECRET:kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F}
+
+drawspace:
+  s3:
+    endpoint: ${S3_ENDPOINT:http://localhost:9000}
+    access-key: ${S3_ACCESS_KEY:drawspace}
+    secret-key: ${S3_SECRET_KEY:drawspace123}
+    bucket-originals: assets-originals
+    bucket-thumbnails: assets-thumbnails
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

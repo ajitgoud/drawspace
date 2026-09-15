@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: 6379
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: http://auth-service:8081
+              predicates:
+                - Path=/auth/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 5
+                    redis-rate-limiter.burstCapacity: 10
+            - id: canvas-service
+              uri: http://canvas-service:8082
+              predicates:
+                - Path=/canvas/**
+            - id: public-canvas
+              uri: http://canvas-service:8082
+              predicates:
+                - Path=/public/**
+            - id: asset-service
+              uri: http://asset-service:8083
+              predicates:
+                - Path=/assets/**
+
+jwt:
+  secret: ${JWT_SECRET:kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

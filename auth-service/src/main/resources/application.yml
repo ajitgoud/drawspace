@@ -1,0 +1,24 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/drawspace}
+    username: ${SPRING_DATASOURCE_USERNAME:drawspace}
+    password: ${SPRING_DATASOURCE_PASSWORD:drawspace}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET:kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F}
+  expiration-minutes: 60
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
