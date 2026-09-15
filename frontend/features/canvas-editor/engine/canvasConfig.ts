@@ -1,0 +1,1 @@
+export const CANVAS_OPTIONS = { width: 1100, height: 700, backgroundColor: "#ffffff" };
