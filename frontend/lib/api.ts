@@ -82,4 +82,6 @@ export const api = {
     // PublicProjectController doesn't require auth at all — an anonymous
     // visitor with no token in localStorage works identically.
     getPublicCanvas: (slug: string) => request<any>(`/public/${slug}`),
+
+    unshareCanvas: (id: string) => request<void>(`/canvas/${id}/share`, { method: "DELETE" }),
 };

@@ -214,8 +214,7 @@ export class FabricCanvasEngine implements CanvasEngine {
     }
 
     async importJSON(json: string): Promise<void> {
-        const data = JSON.parse(json);
-        await this.loadFromJSON(data);
+        await this.loadFromJSON(json);
         this.requireCanvas().requestRenderAll();
     }
 

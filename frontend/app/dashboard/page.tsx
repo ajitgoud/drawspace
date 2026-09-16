@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, FileEdit } from "lucide-react";
-import { api, getToken } from "@/lib/api";
+import { Plus, Trash2, FileEdit, LogOut } from "lucide-react";
+import { api, getToken, clearToken } from "@/lib/api";
 
 type CanvasSummary = {
     id: string;
@@ -22,13 +22,25 @@ const DashboardPage = () => {
         setError(null);
         try {
             const data = await api.listCanvases();
-            setCanvases(data);
+            // Client-side safety net — backend should already return newest
+            // first (see CanvasRepository.findByOwnerIdOrderByUpdatedAtDesc),
+            // but sorting here too means the UI stays correct even if that
+            // changes, and costs nothing at this list size.
+            const sorted = [...data].sort(
+                (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            );
+            setCanvases(sorted);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to load canvases");
         } finally {
             setLoading(false);
         }
     }, []);
+
+    const handleLogout = () => {
+        clearToken();
+        router.push("/login");
+    };
 
     useEffect(() => {
         // Route guard: this page requires auth, but we keep it a client-side
@@ -45,7 +57,7 @@ const DashboardPage = () => {
     const handleCreate = async () => {
         setCreating(true);
         try {
-            const created = await api.createCanvas("Untitled canvas" );
+            const created = await api.createCanvas("Untitled canvas");
             router.push(`/editor/${created.id}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to create canvas");
@@ -72,14 +84,23 @@ const DashboardPage = () => {
                         <h1 className="text-xl font-semibold text-zinc-800">Your canvases</h1>
                         <p className="text-sm text-zinc-400">Pick one up, or start something new</p>
                     </div>
-                    <button
-                        onClick={handleCreate}
-                        disabled={creating}
-                        className="flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-60"
-                    >
-                        <Plus size={15} />
-                        {creating ? "Creating…" : "New canvas"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleCreate}
+                            disabled={creating}
+                            className="flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-60"
+                        >
+                            <Plus size={15} />
+                            {creating ? "Creating…" : "New canvas"}
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 rounded-md border border-panel-border px-3 py-2 text-sm text-zinc-500 transition hover:border-red-300 hover:text-red-500"
+                        >
+                            <LogOut size={15} />
+                            Log out
+                        </button>
+                    </div>
                 </div>
 
                 {error && (

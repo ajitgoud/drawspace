@@ -1,21 +1,44 @@
 "use client";
 import React, { useState } from "react";
-import { Share2, Check, Copy } from "lucide-react";
+import { Share2, Check, Copy, X } from "lucide-react";
 import { api } from "@/lib/api";
 
-const ShareButton = ({ canvasId }: { canvasId: string }) => {
-    const [shareUrl, setShareUrl] = useState<string | null>(null);
+const ShareButton = ({
+                         canvasId,
+                         initialIsPublic,
+                         initialPublicSlug,
+                     }: {
+    canvasId: string;
+    initialIsPublic: boolean;
+    initialPublicSlug: string | null;
+}) => {
+    const [isPublic, setIsPublic] = useState(initialIsPublic);
+    const [slug, setSlug] = useState(initialPublicSlug);
     const [copied, setCopied] = useState(false);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
+    const shareUrl = slug ? `${window.location.origin}/public/${slug}` : null;
+
     const handleShare = async () => {
         setOpen(true);
-        if (shareUrl) return; // already fetched this session
+        if (isPublic && slug) return; // already shared, nothing to fetch
         setLoading(true);
         try {
             const { publicSlug } = await api.shareCanvas(canvasId);
-            setShareUrl(`${window.location.origin}/public/${publicSlug}`);
+            setSlug(publicSlug);
+            setIsPublic(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUnshare = async () => {
+        setLoading(true);
+        try {
+            await api.unshareCanvas(canvasId);
+            setIsPublic(false);
+            setSlug(null);
         } finally {
             setLoading(false);
         }
@@ -32,17 +55,21 @@ const ShareButton = ({ canvasId }: { canvasId: string }) => {
         <div className="relative">
             <button
                 onClick={handleShare}
-                className="flex items-center gap-2 rounded-md border border-panel-border px-3 py-1.5 text-sm text-zinc-600 hover:border-brand hover:text-brand"
+                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition ${
+                    isPublic
+                        ? "border-brand text-brand"
+                        : "border-panel-border text-zinc-600 hover:border-brand hover:text-brand"
+                }`}
             >
                 <Share2 size={14} />
-                Share
+                {isPublic ? "Shared" : "Share"}
             </button>
 
             {open && (
                 <div className="absolute right-0 top-full z-20 mt-2 w-72 rounded-md border border-panel-border bg-white p-3 shadow-lg">
                     <p className="mb-2 text-xs font-medium text-zinc-500">Public link</p>
                     {loading ? (
-                        <p className="text-xs text-zinc-400">Generating…</p>
+                        <p className="text-xs text-zinc-400">Working…</p>
                     ) : (
                         <div className="flex items-center gap-2">
                             <input
@@ -58,12 +85,21 @@ const ShareButton = ({ canvasId }: { canvasId: string }) => {
                             </button>
                         </div>
                     )}
-                    <button
-                        onClick={() => setOpen(false)}
-                        className="mt-2 text-[11px] text-zinc-400 hover:text-zinc-600"
-                    >
-                        Close
-                    </button>
+                    <div className="mt-2 flex items-center justify-between">
+                        {isPublic && (
+                            <button
+                                onClick={handleUnshare}
+                                disabled={loading}
+                                className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600 disabled:opacity-60"
+                            >
+                                <X size={11} />
+                                Stop sharing
+                            </button>
+                        )}
+                        <button onClick={() => setOpen(false)} className="ml-auto text-[11px] text-zinc-400 hover:text-zinc-600">
+                            Close
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

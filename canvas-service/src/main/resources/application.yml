@@ -8,10 +8,13 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:drawspace}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
 jwt:
   secret: ${JWT_SECRET:kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F}

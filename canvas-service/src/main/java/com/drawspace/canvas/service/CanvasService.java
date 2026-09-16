@@ -32,7 +32,7 @@ public class CanvasService {
     }
 
     public List<CanvasSummaryResponse> listMine(UUID ownerId) {
-        return repository.findByOwnerId(ownerId).stream()
+        return repository.findByOwnerIdOrderByUpdatedAtDesc(ownerId).stream()
                 .map(p -> new CanvasSummaryResponse(p.getId(), p.getTitle(), p.isPublic(), p.getUpdatedAt()))
                 .toList();
     }

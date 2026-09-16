@@ -8,5 +8,6 @@ import java.util.UUID;
 
 public interface CanvasRepository extends JpaRepository<Canvas, UUID> {
     List<Canvas> findByOwnerId(UUID ownerId);
+    List<Canvas> findByOwnerIdOrderByUpdatedAtDesc(UUID ownerId);
     Optional<Canvas> findByPublicSlugAndIsPublicTrue(String publicSlug);
 }

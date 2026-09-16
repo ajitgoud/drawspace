@@ -17,7 +17,7 @@ public class PublicCanvasController {
     private final CanvasService service;
 
     @GetMapping("/{slug}")
-    public CanvasDetailResponse getPublic(@PathVariable String slug) {
+    public CanvasDetailResponse getPublic(@PathVariable("slug") String slug) {
         return service.getPublic(slug);
     }
 }
