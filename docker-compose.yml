@@ -2,15 +2,16 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: drawspace
-      POSTGRES_PASSWORD: drawspace
-      POSTGRES_DB: drawspace
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_USER}
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./postgres/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U drawspace"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -47,8 +48,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: drawspace
-      MINIO_ROOT_PASSWORD: drawspace123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
     healthcheck:
@@ -64,10 +65,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/drawspace
-      SPRING_DATASOURCE_USERNAME: drawspace
-      SPRING_DATASOURCE_PASSWORD: drawspace
-      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}_auth
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -79,10 +80,10 @@ services:
     ports:
       - "8082:8082"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/drawspace
-      SPRING_DATASOURCE_USERNAME: drawspace
-      SPRING_DATASOURCE_PASSWORD: drawspace
-      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}_canvas
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -94,14 +95,14 @@ services:
     ports:
       - "8083:8083"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/drawspace
-      SPRING_DATASOURCE_USERNAME: drawspace
-      SPRING_DATASOURCE_PASSWORD: drawspace
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}_asset
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       S3_ENDPOINT: http://minio:9000
-      S3_ACCESS_KEY: drawspace
-      S3_SECRET_KEY: drawspace123
-      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -118,7 +119,7 @@ services:
       - "8080:8080"
     environment:
       SPRING_REDIS_HOST: redis
-      JWT_SECRET: kZgjfk0iQV97CMZVw72sRUfvJ554NxZzxfadCooXtBk6L0OkOMmZy2po9RxDZz1F
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       redis:
         condition: service_healthy
